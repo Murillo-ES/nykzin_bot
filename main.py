@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+
 BOT_STATUS = cycle(
     [
         '!mastery [Nickname][#TAG] para buscar as 5 maiores maestrias do \
@@ -26,7 +27,7 @@ client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 async def load():
     for filename in os.listdir('./cogs'):
-        if filename.endswith(".py"):
+        if (filename.endswith(".py")) and (filename != 'classes.py'):
             await client.load_extension(f"cogs.{filename[:-3]}")
 
 

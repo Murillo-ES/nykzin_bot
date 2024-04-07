@@ -1,30 +1,8 @@
+from .classes import RIOT_API_KEY, Player
 import discord
 from discord.ext import commands
 import requests
 from urllib.parse import urlencode
-import os
-
-from dotenv import load_dotenv
-load_dotenv()
-
-RIOT_API_KEY = os.getenv('RIOT_API_KEY')
-
-
-def get_puuid(summoner_name, gametag):
-    params = {
-            'api_key': RIOT_API_KEY
-        }
-    api_url = f'https://americas.api.riotgames.com/riot/account/v1/accounts/\
-by-riot-id/{summoner_name}/{gametag}'
-
-    try:
-        response = requests.get(api_url, params=urlencode(params))
-        response.raise_for_status()
-        summ_puuid = response.json()['puuid']
-        return summ_puuid
-    except requests.exceptions.RequestException as e:
-        print(f'Error: {e}')
-        return None
 
 
 class GetSummonerMastery(commands.Cog):
@@ -40,21 +18,20 @@ class GetSummonerMastery(commands.Cog):
         tag_index = summoner.find('#')
         summoner_name = summoner[:tag_index]
         gametag = summoner[tag_index + 1:]
+        target_player = Player(nickname=summoner_name, tag=gametag)
 
         params = {
             'api_key': RIOT_API_KEY
         }
 
-        player_id = get_puuid(summoner_name=summoner_name, gametag=gametag)
-
         mastery_url = f'https://br1.api.riotgames.com/lol/champion-mastery/v4/\
-champion-masteries/by-puuid/{player_id}/top?count=5'
+champion-masteries/by-puuid/{target_player.puuid}/top?count=5'
 
         champions_json = 'https://ddragon.leagueoflegends.com/cdn/14.6.1/data/\
 en_US/champion.json'
 
         summoner_url = f'https://br1.api.riotgames.com/lol/summoner/v4/\
-summoners/by-puuid/{player_id}'
+summoners/by-puuid/{target_player.puuid}'
 
         try:
             mastery_response = requests.get(
@@ -102,7 +79,7 @@ profileicon/{summoner_icon}.png'
             )
             embed_message.set_thumbnail(url=icon_url)
             embed_message.add_field(
-                name=f'Player: __{summoner_name}__',
+                name=f'Player: __{target_player.nickname}__',
                 value=response
             )
 
