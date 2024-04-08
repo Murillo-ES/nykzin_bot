@@ -36,7 +36,7 @@ queues.json'
         try:
             api_response = requests.get(match_url, params=urlencode(params))
             api_response.raise_for_status()
-            await ctx.send('Partida encontrada! Só um segundo, chefe.')
+            await ctx.send('Partida encontrada! Analisando os players...')
 
             players_dict = {}
             counter = 1
@@ -61,6 +61,14 @@ queues.json'
             players_nicknames = []
             for player in players:
                 players_nicknames.append(player.nickname)
+
+            players_solo_stats = []
+            for player in players:
+                players_solo_stats.append(player.solo_stats)
+
+            players_flex_stats = []
+            for player in players:
+                players_flex_stats.append(player.flex_stats)
 
             masteries = []
             for player, id in list(players_dict.values()):
@@ -95,13 +103,17 @@ queues.json'
                 if len(blue_side) < 5:
                     blue_side.append(
                         f'**{players_nicknames[counter]}**: \
-{champions_list[counter]} ({masteries[counter]} PM)'
+{champions_list[counter]} ({masteries[counter]} PM)\n\
+***Solo:** {players_solo_stats[counter]}* | \
+***Flex:** {players_flex_stats[counter]}*\n'
                     )
                     counter += 1
                 else:
                     red_side.append(
                         f'**{players_nicknames[counter]}**: \
-{champions_list[counter]} ({masteries[counter]} PM)'
+{champions_list[counter]} ({masteries[counter]} PM)\n\
+***Solo:** {players_solo_stats[counter]}* | \
+***Flex:** {players_flex_stats[counter]}*\n'
                     )
                     counter += 1
 

@@ -11,11 +11,11 @@ DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 
 BOT_STATUS = cycle(
     [
-        '!mastery [Nickname][#TAG] para buscar as 5 maiores maestrias do \
+        '!mastery Nickname#TAG para buscar as 5 maiores maestrias do \
 player.',
         '#TLWIN',
-        '!match [Nickname][#TAG] para verificar informações de partida em \
-andamento (em construção)',
+        '!match Nickname#TAG para verificar informações de partida em \
+andamento.',
         '#GOPAIN',
         'Não tilte com os seus amiguinhos!'
     ]
