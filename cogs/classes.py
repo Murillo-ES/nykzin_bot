@@ -155,9 +155,29 @@ champion-masteries/by-puuid/{self.puuid}/by-champion/{champion_id}'
             return 0
 
 
-# test_player = Player('Lionel Messi', 'FBC')
-# print(f'Summoner: {test_player.nickname}#{test_player.tag}')
-# print(f'Puuid: {test_player.puuid}')
-# print(f'Summoner ID: {test_player.summoner_id}')
-# print(f'Solo Stats: {test_player.solo_stats}')
-# print(f'Flex Stats: {test_player.flex_stats}')
+class Bettor:
+    def __init__(self, disc_id, disc_name):
+        self.disc_id = disc_id
+        self.disc_name = disc_name
+        self.__wallet = 100.0
+
+    @property
+    def wallet(self):
+        return self.__wallet
+
+    def has_money(self, value):
+        if self.wallet >= value:
+            return True
+        return False
+
+    def withdraw(self, value):
+        if self.has_money(value=value):
+            self.__wallet -= value
+            return f'Transação completa! Gold atual: {self.wallet}'
+        else:
+            return f'Você não tem tanto gold assim, caloteiro! Gold atual: \
+{self.wallet}'
+
+    def deposit(self, value):
+        self.__wallet += value
+        return f'Transação completa! Gold atual: {self.wallet}'

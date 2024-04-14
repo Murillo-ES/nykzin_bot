@@ -3,8 +3,8 @@ from discord.ext import commands, tasks
 from itertools import cycle
 import os
 import asyncio
-
 from dotenv import load_dotenv
+
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
