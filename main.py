@@ -1,3 +1,4 @@
+from database import get_matches, update_db
 import discord
 from discord.ext import commands, tasks
 from itertools import cycle
@@ -25,9 +26,12 @@ intents = discord.Intents.default()
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 
+not_cogs = ['classes.py', 'functions.py']
+
+
 async def load():
     for filename in os.listdir('./cogs'):
-        if (filename.endswith(".py")) and (filename != 'classes.py'):
+        if (filename.endswith(".py")) and (filename not in not_cogs):
             await client.load_extension(f"cogs.{filename[:-3]}")
 
 
@@ -47,5 +51,7 @@ async def main():
         await load()
         await client.start(DISCORD_TOKEN)
 
+matches = get_matches()
+update_db(matches=matches)
 
 asyncio.run(main())

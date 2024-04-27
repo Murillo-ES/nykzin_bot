@@ -156,10 +156,10 @@ champion-masteries/by-puuid/{self.puuid}/by-champion/{champion_id}'
 
 
 class Bettor:
-    def __init__(self, disc_id, disc_name):
+    def __init__(self, disc_id, disc_name, wallet=None):
         self.disc_id = disc_id
         self.disc_name = disc_name
-        self.__wallet = 100.0
+        self.__wallet = 1000.0 if wallet is None else wallet
 
     @property
     def wallet(self):
@@ -173,11 +173,11 @@ class Bettor:
     def withdraw(self, value):
         if self.has_money(value=value):
             self.__wallet -= value
-            return f'Transação completa! Gold atual: {self.wallet}'
+            return f'Transação completa! Gold atual: {self.wallet}.'
         else:
             return f'Você não tem tanto gold assim, caloteiro! Gold atual: \
-{self.wallet}'
+{self.wallet}.'
 
     def deposit(self, value):
         self.__wallet += value
-        return f'Transação completa! Gold atual: {self.wallet}'
+        return f'Transação completa! Gold atual: {self.wallet}.'
