@@ -1,6 +1,7 @@
-from .functions import get_match_info
+from .functions_and_classes import get_match_info
 import discord
 from discord.ext import commands
+from datetime import datetime
 from dotenv import load_dotenv
 import os
 import mysql.connector
@@ -30,22 +31,28 @@ class Games(commands.Cog):
 
         mycursor = mydb.cursor()
 
-        mycursor.execute('SELECT * FROM games WHERE winner = 0')
+        mycursor.execute('SELECT * FROM games WHERE winner = 0 ORDER BY date')
 
         myresult = mycursor.fetchall()
 
         response_str = ''
 
+        today = datetime.now()
+
         for entry in myresult:
+            date = entry[2]
+            if date < today:
+                continue
+
             game_id = entry[0]
             match_info = get_match_info(game_id=game_id)
-
-            date = entry[2]
             day = date.day
             month = date.month
             year = date.year
+            time = date.time()
 
-            response_str += f'**Game ID: __{game_id}__** -> {match_info} [{day}/{month}/{year}]\n\n'
+            response_str += f'{day}/{month}/{year} - {time}h -> {match_info} \
+[Game ID: {game_id}]\nPara apostar: **!bet {game_id} Nome_do_Time Valor**\n\n'
 
         embed_message = discord.Embed(
                 color=discord.Color.dark_blue()

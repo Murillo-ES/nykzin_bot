@@ -40,7 +40,8 @@ class Leaderboard(commands.Cog):
             disc_name = entry[2]
             wallet = entry[-1]
 
-            response_str += f'**{counter}º** -> **{disc_name}** [G$ {wallet}]\n'
+            response_str += f'**{counter}º** -> **{disc_name}** \
+[G$ {wallet}]\n'
             counter += 1
 
         embed_message = discord.Embed(

@@ -35,7 +35,8 @@ class CheckWallet(commands.Cog):
         myresult = mycursor.fetchone()
 
         if myresult is None:
-            await ctx.send('Você ainda não tem uma carteira D: usa "!registro" ou "!reg" pra começar a apostar!')
+            await ctx.send('Você ainda não tem uma carteira D: usa \
+"!registro" ou "!reg" pra começar a apostar!')
 
         disc_name = myresult[2]
         wallet = myresult[-1]

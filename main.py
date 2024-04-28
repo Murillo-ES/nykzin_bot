@@ -1,4 +1,4 @@
-from database import get_matches, update_db
+from cogs.functions_and_classes import get_matches, update_db
 import discord
 from discord.ext import commands, tasks
 from itertools import cycle
@@ -26,7 +26,7 @@ intents = discord.Intents.default()
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 
-not_cogs = ['classes.py', 'functions.py']
+not_cogs = ['functions_and_classes.py']
 
 
 async def load():

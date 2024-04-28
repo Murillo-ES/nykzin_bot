@@ -1,4 +1,4 @@
-from .classes import RIOT_API_KEY, Player
+from .functions_and_classes import RIOT_API_KEY, Player
 import discord
 from discord.ext import commands
 import requests

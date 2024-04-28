@@ -1,4 +1,5 @@
-from .classes import Bettor
+from .functions_and_classes import Bettor
+from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
@@ -35,7 +36,8 @@ class Bet(commands.Cog):
         myresult = mycursor.fetchone()
 
         if myresult is None:
-            await ctx.send('Você não tá cadastrado, chefe. Usa "!registro" ou "!reg" primeiro ae.')
+            await ctx.send('Você não tá cadastrado, chefe. Usa "!registro" ou \
+"!reg" primeiro ae.')
 
         param = param.split()
         game_id = param.pop(0)
@@ -47,11 +49,19 @@ class Bet(commands.Cog):
 
         bettor = Bettor(disc_id=disc_id, disc_name=disc_name, wallet=wallet)
 
-        mycursor.execute(f'SELECT * FROM games WHERE game_id = {game_id} AND winner = 0')
+        today = datetime.now()
+
+        mycursor.execute(f'SELECT * FROM games WHERE game_id = {game_id} AND \
+winner = 0')
         myresult = mycursor.fetchone()
 
         if myresult is None:
-            await ctx.send('Tem esse game não, loco. Usa "!games" ae e faz o negócio direito.')
+            await ctx.send('Tem esse game não, loco. Usa "!games" ae e faz o \
+negócio direito.')
+
+        elif myresult[2] < today:
+            await ctx.send('Não pode apostar nessa não, irmão. Usa "!games" \
+ae, faz favor.')
 
         else:
             team_1 = myresult[4]
@@ -61,21 +71,32 @@ class Bet(commands.Cog):
                 (bet_name != team_1) and
                 (bet_name != team_2)
             ):
-                await ctx.send('Mlk, vc é burro? Coloca o nome direito aí, vacilão (usa "!games" pra ver o nome do time.)')
+                await ctx.send('Mlk, vc é burro? Coloca o nome direito aí, \
+vacilão (usa "!games" pra ver o nome do time.)')
 
             bet_side = 1 if team_1 == bet_name else 2
 
-            if value <= wallet:
+            try:
+                if value <= wallet:
 
-                bettor.withdraw(value=value)
+                    bettor.withdraw(value=value)
 
-                mycursor.execute(f'INSERT INTO bets (user_id, game_id, value, bet_side, status) VALUES ({user_id}, {game_id}, {value}, {bet_side}, "OPEN")')
+                    mycursor.execute(f'INSERT INTO bets (user_id, game_id, \
+value, bet_side, status) VALUES ({user_id}, {game_id}, {value}, {bet_side}, \
+"OPEN")')
 
-                mycursor.execute(f'UPDATE user SET wallet = {bettor.wallet} WHERE user_id = {user_id}')
+                    mycursor.execute(f'UPDATE user SET wallet = \
+{bettor.wallet} WHERE user_id = {user_id}')
 
-                mydb.commit()
+                    mydb.commit()
 
-                await ctx.send(f'Você apostou G$ {value} em {bet_name}. Boa sorte!')
+                    await ctx.send(f'Você apostou G$ {value} em {bet_name}. \
+Boa sorte!')
+
+            except ValueError:
+
+                await ctx.send('Pô, chefe, coloca um valor válido aí irmão, \
+na moral.')
 
 
 async def setup(client):

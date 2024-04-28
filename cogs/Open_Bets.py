@@ -1,4 +1,4 @@
-from .functions import get_match_info
+from .functions_and_classes import get_match_info
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -40,17 +40,20 @@ class OpenBets(commands.Cog):
 
             game_id = entry[2]
 
-            mycursor.execute(f'SELECT discord_name FROM user WHERE user_id = {entry[1]}')
+            mycursor.execute(f'SELECT discord_name FROM user WHERE user_id = \
+{entry[1]}')
             bettor = mycursor.fetchone()[0]
 
             match_info = get_match_info(game_id=game_id)
 
             value = entry[3]
 
-            mycursor.execute(f'SELECT team_{entry[4]} FROM games WHERE game_id = {game_id}')
+            mycursor.execute(f'SELECT team_{entry[4]} FROM games WHERE \
+game_id = {game_id}')
             bet_side = mycursor.fetchone()[0]
 
-            response_str += f'**{bettor}** apostou **G$ {value}** em {bet_side} no jogo {match_info} (Game ID: **{game_id}**)\n\n'
+            response_str += f'**{bettor}** apostou **G$ {value}** em \
+{bet_side} no jogo {match_info} (Game ID: **{game_id}**)\n\n'
 
         embed_message = discord.Embed(
                 color=discord.Color.dark_blue()
