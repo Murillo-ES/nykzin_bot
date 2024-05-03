@@ -9,12 +9,8 @@ from fuzzywuzzy import fuzz
 
 load_dotenv()
 
-#####################
-##### FUNCTIONS #####
-#####################
-
+RIOT_API_KEY = os.getenv('RIOT_API_KEY')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
-FUZZ_THRESHOLD = 50
 
 month_dict = {
     'jan': 'Jan',
@@ -31,6 +27,8 @@ month_dict = {
     'dez': 'Dec'
 }
 
+# FUNCTIONS
+
 
 def get_match_info(game_id: int):
 
@@ -43,7 +41,10 @@ def get_match_info(game_id: int):
 
     mycursor = mydb.cursor()
 
-    mycursor.execute(f'SELECT * FROM games WHERE game_id = {game_id}')
+    sql = 'SELECT * FROM games WHERE game_id = %s'
+    val = (game_id,)
+
+    mycursor.execute(sql, val)
 
     myresult = mycursor.fetchone()
 
@@ -67,15 +68,20 @@ def update_bets(game_id: int, winner: int):
 
     mycursor = mydb.cursor()
 
-    mycursor.execute(f'SELECT * FROM bets WHERE game_id = {game_id}')
+    sql = 'SELECT * FROM bets WHERE game_id = %s'
+    val = (game_id,)
+
+    mycursor.execute(sql, val)
 
     myresults = mycursor.fetchall()
 
     if len(myresults) == 0:
         print('No bets to be altered.')
     else:
-        mycursor.execute(f'SELECT team_{winner}_odd FROM games WHERE game_id \
-= {game_id}')
+        sql = f'SELECT team_{winner}_odd FROM games WHERE game_id = %s'
+        val = (game_id,)
+
+        mycursor.execute(sql, val)
 
         winner_odd = round(float(mycursor.fetchone()[0]), 2)
 
@@ -85,8 +91,11 @@ def update_bets(game_id: int, winner: int):
             bet_side = int(entry[4])
             value = float(entry[3])
 
-            mycursor.execute(f'SELECT discord_id, discord_name, wallet FROM \
-user WHERE user_id = {user_id}')
+            sql = 'SELECT discord_id, discord_name, wallet FROM user WHERE \
+user_id = %s'
+            val = (user_id,)
+
+            mycursor.execute(sql, val)
             myresult = mycursor.fetchone()
 
             disc_id = myresult[0]
@@ -99,14 +108,19 @@ user WHERE user_id = {user_id}')
                 wallet=float(wallet)
             )
 
-            mycursor.execute(f'UPDATE bets SET status = "CLOSED" WHERE bet_id \
-= {bet_id}')
+            sql = 'UPDATE bets SET status = "CLOSED" WHERE bet_id = %s'
+            val = (bet_id,)
+
+            mycursor.execute(sql, val)
 
             if bet_side == winner:
                 bettor.deposit(value=value * winner_odd)
 
-                mycursor.execute(f'UPDATE user SET wallet = {bettor.wallet} \
-WHERE user_id = {user_id}')
+                sql = f'UPDATE user SET wallet = {bettor.wallet} WHERE \
+user_id = %s'
+                val = (user_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
@@ -124,14 +138,27 @@ def get_matches():
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    betline_div = soup.find_all('div', class_='betline m-auto betline-wide \
-mb-0')
+    betline_div = soup.find_all(
+        'div',
+        class_='betline m-auto betline-wide mb-0'
+    )
 
     matches = []
 
     for div in betline_div:
-        league = div.find('div', class_='text-league-of-legends-shade \
-dark:text-league-of-legends-tint text-[11px]').text.strip()
+        handicap_bet = div.find(
+            'div',
+            class_='text-2xs leading-1 text-navy dark:text-[#CFCFD1]'
+        )
+        is_handicap = handicap_bet is None
+
+        if is_handicap:
+            break
+
+        league = div.find(
+            'div',
+            class_='text-league-of-legends-shade dark:text-league-of-legends-tint text-[11px]'
+        ).text.strip()
 
         team_names = div.find_all('div', class_='outcome-name')
         team_one = team_names[0].text.strip()
@@ -141,8 +168,10 @@ dark:text-league-of-legends-tint text-[11px]').text.strip()
         team_one_odd = float(team_odds[0].text.strip())
         team_two_odd = float(team_odds[1].text.strip())
 
-        date_div = div.find('div', class_='text-navy dark:text-[#CFCFD1] \
-leading-3 text-[11px]')
+        date_div = div.find(
+            'div',
+            class_='text-navy dark:text-[#CFCFD1] leading-3 text-[11px]'
+        )
 
         date_strong = date_div.find('strong').text.strip()
         pt_month, day = date_strong.split()
@@ -182,8 +211,10 @@ def check_winner(game_id: int):
 
     mycursor = mydb.cursor()
 
-    mycursor.execute(f'SELECT team_1, team_2, winner FROM games WHERE game_id \
-= {game_id}')
+    sql = 'SELECT team_1, team_2, winner FROM games WHERE game_id = %s'
+    val = (game_id,)
+
+    mycursor.execute(sql, val)
     myresult = mycursor.fetchone()
     team_1 = myresult[0]
     team_2 = myresult[1]
@@ -230,8 +261,10 @@ def check_winner(game_id: int):
             team_2_score = int(score_text[2])
 
             if team_1_score > team_2_score:
-                mycursor.execute(f'UPDATE games SET winner = 1 WHERE \
-game_id = {game_id}')
+                sql = 'UPDATE games SET winner = 1 WHERE game_id = %s'
+                val = (game_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
@@ -240,8 +273,10 @@ game_id = {game_id}')
                 update_bets(game_id=game_id, winner=1)
 
             else:
-                mycursor.execute(f'UPDATE games SET winner = 2 WHERE \
-game_id = {game_id}')
+                sql = 'UPDATE games SET winner = 2 WHERE game_id = %s'
+                val = (game_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
@@ -259,8 +294,10 @@ game_id = {game_id}')
             team_2_score = int(score_text[0])
 
             if team_1_score > team_2_score:
-                mycursor.execute(f'UPDATE games SET winner = 1 WHERE \
-game_id = {game_id}')
+                sql = 'UPDATE games SET winner = 2 WHERE game_id = %s'
+                val = (game_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
@@ -269,8 +306,10 @@ game_id = {game_id}')
                 update_bets(game_id=game_id, winner=1)
 
             else:
-                mycursor.execute(f'UPDATE games SET winner = 2 WHERE \
-game_id = {game_id}')
+                sql = 'UPDATE games SET winner = 2 WHERE game_id = %s'
+                val = (game_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
@@ -290,7 +329,10 @@ def check_odds(game_id: int):
 
     mycursor = mydb.cursor()
 
-    mycursor.execute(f'SELECT * FROM games WHERE game_id = {game_id}')
+    sql = 'SELECT * FROM games WHERE game_id = %s'
+    val = (game_id,)
+
+    mycursor.execute(sql, val)
 
     myresult = mycursor.fetchone()
 
@@ -305,8 +347,10 @@ def check_odds(game_id: int):
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    betline_div = soup.find_all('div', class_='betline m-auto betline-wide \
-mb-0')
+    betline_div = soup.find_all(
+        'div',
+        class_='betline m-auto betline-wide mb-0'
+    )
 
     for div in betline_div:
         team_names = div.find_all('div', class_='outcome-name')
@@ -322,16 +366,22 @@ mb-0')
             (div_team_2 == team_2)
         ):
             if div_team_1_odd != team_1_odd:
-                mycursor.execute(f'UPDATE games SET team_1_odd \
-= {div_team_1_odd} WHERE game_id = {game_id}')
+                sql = f'UPDATE games SET team_1_odd = {div_team_1_odd} \
+WHERE game_id = %s'
+                val = (game_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
                 print(mycursor.rowcount, 'record(s) altered.')
 
             if div_team_2_odd != team_2_odd:
-                mycursor.execute(f'UPDATE games SET team_2_odd \
-= {div_team_2_odd} WHERE game_id = {game_id}')
+                sql = f'UPDATE games SET team_2_odd = {div_team_2_odd} \
+WHERE game_id = %s'
+                val = (game_id,)
+
+                mycursor.execute(sql, val)
 
                 mydb.commit()
 
@@ -349,7 +399,10 @@ def check_matches():
 
     mycursor = mydb.cursor()
 
-    mycursor.execute('SELECT * FROM games WHERE winner = 0')
+    sql = 'SELECT * FROM games WHERE winner = %s'
+    val = ("0",)
+
+    mycursor.execute(sql, val)
 
     myresult = mycursor.fetchall()
 
@@ -382,28 +435,29 @@ def update_db(matches: list):
         team_1, team_1_odd = matches[item][2]
         team_2, team_2_odd = matches[item][3]
 
-        mycursor.execute(f'SELECT * FROM games WHERE team_1 = "{team_1}" AND \
-team_2 = "{team_2}"')
+        sql = 'SELECT * FROM games WHERE team_1 = %s AND team_2 = %s'
+        val = (team_1, team_2)
+
+        mycursor.execute(sql, val)
 
         myresult = mycursor.fetchall()
 
         if len(myresult) == 0:
-            mycursor.execute(f'INSERT INTO games (league, date, winner, \
-team_1, team_1_odd, team_2, team_2_odd) VALUES ("{league}", "{date}", 0, \
-"{team_1}", {team_1_odd}, "{team_2}", {team_2_odd})')
+            sql = 'INSERT INTO games (league, date, winner, team_1, \
+team_1_odd, team_2, team_2_odd) VALUES (%s, %s, 0, %s, \
+%s, %s, %s)'
+            val = (league, date, team_1, team_1_odd, team_2, team_2_odd,)
+
+            mycursor.execute(sql, val)
 
             mydb.commit()
 
             print(f'1 record inserted. ID: {mycursor.lastrowid}')
 
-    check_matches()
+        check_matches()
 
 
-###################
-##### CLASSES #####
-###################
-
-RIOT_API_KEY = os.getenv('RIOT_API_KEY')
+# CLASSES
 
 
 class Player:

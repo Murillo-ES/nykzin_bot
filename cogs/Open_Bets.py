@@ -18,7 +18,7 @@ class OpenBets(commands.Cog):
     async def on_ready(self):
         print('Open_Bets.py is ready!')
 
-    @commands.command(aliases=['obs'])
+    @commands.command(aliases=['obs', 'bets'])
     async def open_bets(self, ctx):
 
         mydb = mysql.connector.connect(
@@ -30,7 +30,10 @@ class OpenBets(commands.Cog):
 
         mycursor = mydb.cursor()
 
-        mycursor.execute('SELECT * FROM bets WHERE status = "OPEN"')
+        sql = 'SELECT * FROM bets WHERE status = %s'
+        val = ('OPEN',)
+
+        mycursor.execute(sql, val)
 
         myresult = mycursor.fetchall()
 

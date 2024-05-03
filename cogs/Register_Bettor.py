@@ -35,8 +35,11 @@ class RegisterBettor(commands.Cog):
         myresult = mycursor.fetchall()
 
         if len(myresult) == 0:
-            mycursor.execute(f"INSERT INTO user (discord_id, discord_name, \
-wallet) VALUES ({discord_id}, '{discord_name}', 1000.0)")
+            sql = "INSERT INTO user (discord_id, discord_name, \
+wallet) VALUES (%s, %s, %s)"
+            val = (discord_id, discord_name, 1000.0,)
+
+            mycursor.execute(sql, val)
             mydb.commit()
 
             print(f'1 record inserted. ID: {mycursor.lastrowid}')

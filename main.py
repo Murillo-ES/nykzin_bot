@@ -5,20 +5,37 @@ from itertools import cycle
 import os
 import asyncio
 from dotenv import load_dotenv
+from random import choice
 
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+TEAM_WIN_LIST = ['#PNGWIN', '#LLLWIN', '#TLWIN']
 
 BOT_STATUS = cycle(
     [
-        '!mastery Nickname#TAG para buscar as 5 maiores maestrias do \
+        '!bet [Game_ID] [Nome do Time] [Valor] -> Fazer uma aposta em um game \
+disponível.',
+        choice(TEAM_WIN_LIST),
+        '!carteira -> Mostra quanto você tem na carteira.',
+        choice(TEAM_WIN_LIST),
+        '!games -> Mostra os jogos disponíveis para realizar uma bet.',
+        choice(TEAM_WIN_LIST),
+        '!mastery [Nickname#TAG] -> Busca as 5 maiores maestrias do \
 player.',
-        '#TLWIN',
-        '!match Nickname#TAG para verificar informações de partida em \
+        choice(TEAM_WIN_LIST),
+        '!leaderboard -> Mostra a galera mais rica do server.',
+        choice(TEAM_WIN_LIST),
+        '!match [Nickname#TAG] -> Verifica informações de partida em \
 andamento.',
-        '#GOPAIN',
-        'Não tilte com os seus amiguinhos!'
+        choice(TEAM_WIN_LIST),
+        '!obs OU !bets -> Mostra as bets que a galera fez até o momento.',
+        choice(TEAM_WIN_LIST),
+        '!registro OU !reg -> Registra seu usuário como um apostador nato do \
+server.',
+        choice(TEAM_WIN_LIST),
+        '!att OU !atualiza -> Atualiza as info das partidas e bets.',
+        choice(TEAM_WIN_LIST),
     ]
 )
 

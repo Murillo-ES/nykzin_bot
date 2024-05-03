@@ -4,10 +4,12 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 import mysql.connector
+from fuzzywuzzy import fuzz
 
 load_dotenv()
 
 DB_PASSWORD = os.getenv('DB_PASSWORD')
+FUZZ_THRESHOLD = 50
 
 
 class Bet(commands.Cog):
@@ -31,7 +33,10 @@ class Bet(commands.Cog):
 
         mycursor = mydb.cursor()
 
-        mycursor.execute(f'SELECT * FROM user WHERE discord_id = {disc_id}')
+        sql = 'SELECT * FROM user WHERE discord_id = %s'
+        val = (disc_id,)
+
+        mycursor.execute(sql, val)
 
         myresult = mycursor.fetchone()
 
@@ -51,8 +56,11 @@ class Bet(commands.Cog):
 
         today = datetime.now()
 
-        mycursor.execute(f'SELECT * FROM games WHERE game_id = {game_id} AND \
-winner = 0')
+        sql = 'SELECT * FROM games WHERE game_id = %s AND winner = %s'
+        val = (game_id, "0",)
+
+        mycursor.execute(sql, val)
+
         myresult = mycursor.fetchone()
 
         if myresult is None:
@@ -67,31 +75,52 @@ ae, faz favor.')
             team_1 = myresult[4]
             team_2 = myresult[6]
 
-            if (
-                (bet_name != team_1) and
-                (bet_name != team_2)
-            ):
-                await ctx.send('Mlk, vc é burro? Coloca o nome direito aí, \
-vacilão (usa "!games" pra ver o nome do time.)')
+            similarity_1 = fuzz.ratio(bet_name.lower(), team_1.lower())
+            similarity_2 = fuzz.ratio(bet_name.lower(), team_2.lower())
 
-            bet_side = 1 if team_1 == bet_name else 2
+            if (
+                (similarity_1) < FUZZ_THRESHOLD and
+                (similarity_2) < FUZZ_THRESHOLD
+            ):
+                await ctx.send('Não sei de qual lado você tá fazendo essa \
+bet, chefe =( verifica o nome do time e tenta de novo.)')
+            elif similarity_1 > similarity_2:
+                bet_side = 1
+                bet_side_name = team_1
+            elif similarity_2 > similarity_1:
+                bet_side = 2
+                bet_side_name = team_2
+            else:
+                await ctx.send('Não sei de qual lado você tá fazendo essa \
+bet, chefe =( verifica o nome do time e tenta de novo.)')
+
+#             if (
+#                 (bet_name != team_1) and
+#                 (bet_name != team_2)
+#             ):
+#                 await ctx.send('Mlk, vc é burro? Coloca o nome direito aí, \
+# vacilão (usa "!games" pra ver o nome do time.)')
 
             try:
                 if value <= wallet:
 
                     bettor.withdraw(value=value)
 
-                    mycursor.execute(f'INSERT INTO bets (user_id, game_id, \
-value, bet_side, status) VALUES ({user_id}, {game_id}, {value}, {bet_side}, \
-"OPEN")')
+                    sql = 'INSERT INTO bets (user_id, game_id, value, \
+bet_side, status) VALUES (%s, %s, %s, %s, %s)'
+                    val = (user_id, game_id, value, bet_side, "OPEN",)
 
-                    mycursor.execute(f'UPDATE user SET wallet = \
-{bettor.wallet} WHERE user_id = {user_id}')
+                    mycursor.execute(sql, val)
+
+                    sql = 'UPDATE user SET wallet = %s WHERE user_id = %s'
+                    val = (bettor.wallet, user_id,)
+
+                    mycursor.execute(sql, val)
 
                     mydb.commit()
 
-                    await ctx.send(f'Você apostou G$ {value} em {bet_name}. \
-Boa sorte!')
+                    await ctx.send(f'Você apostou G$ {value} em \
+{bet_side_name}. Boa sorte!')
 
             except ValueError:
 

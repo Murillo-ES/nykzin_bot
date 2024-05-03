@@ -29,7 +29,7 @@ class Leaderboard(commands.Cog):
 
         mycursor = mydb.cursor()
 
-        mycursor.execute('SELECT * FROM user ORDER BY wallet DESC LIMIT 3')
+        mycursor.execute('SELECT * FROM user ORDER BY wallet DESC')
 
         myresult = mycursor.fetchall()
 

@@ -30,7 +30,10 @@ class CheckWallet(commands.Cog):
 
         mycursor = mydb.cursor()
 
-        mycursor.execute(f'SELECT * FROM user WHERE discord_id = {disc_id}')
+        sql = 'SELECT * FROM user WHERE discord_id = %s'
+        val = (disc_id,)
+
+        mycursor.execute(sql, val)
 
         myresult = mycursor.fetchone()
 
@@ -41,13 +44,23 @@ class CheckWallet(commands.Cog):
         disc_name = myresult[2]
         wallet = myresult[-1]
 
+        mycursor.execute('SELECT value FROM bets WHERE user_id = 1 AND \
+status = "OPEN"')
+        myresult = mycursor.fetchall()
+
+        total = 0
+        open_bets = len(myresult)
+        for x in myresult:
+            total += x[0]
+
         embed_message = discord.Embed(
                 color=discord.Color.dark_blue()
             )
         embed_message.set_thumbnail(url=ctx.author.display_avatar)
         embed_message.add_field(
             name=f'CARTEIRA DE {disc_name.upper()}',
-            value=f'**G$ {wallet}**\n**Bets em aberto:** --//--'
+            value=f'**G$ {wallet}**\n**Valor em apostas:** G$ {total}\n**Bets \
+em aberto:** {open_bets}'
             )
 
         await ctx.send(embed=embed_message)

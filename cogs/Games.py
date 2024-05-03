@@ -31,7 +31,10 @@ class Games(commands.Cog):
 
         mycursor = mydb.cursor()
 
-        mycursor.execute('SELECT * FROM games WHERE winner = 0 ORDER BY date')
+        sql = 'SELECT * FROM games WHERE winner = %s ORDER BY date'
+        val = (0,)
+
+        mycursor.execute(sql, val)
 
         myresult = mycursor.fetchall()
 
